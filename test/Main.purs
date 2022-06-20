@@ -18,6 +18,7 @@ import Test.Unit.Main (runTest)
 import Test.Unit.QuickCheck (quickCheck)
 import Test.QuickCheck (Result(..))
 import Test.QuickCheck.Arbitrary (class Arbitrary)
+import Data.Array.NonEmpty (fromNonEmpty)
 import Test.QuickCheck.Gen (Gen, arrayOf1, oneOf)
 
 
@@ -32,18 +33,18 @@ instance arbitraryCookieSample :: Arbitrary CookieSample where
                    <$> arrayOf1 valRFC2625)
     where
       keyRFC2625 =
-        oneOf $ genAlpha :|
+        oneOf $ fromNonEmpty (genAlpha :|
         ([genAlpha, genDigitChar]
          <> (pure <$> ['!', '#', '$', '%', '&', '\''
                       , '*', '+', '-', '.', '^', '_'
-                      , '`', '|', '~']))
+                      , '`', '|', '~'])))
       valRFC2625 =
-        oneOf $ genAlpha :|
+        oneOf $ fromNonEmpty (genAlpha :|
         ([genAlpha, genDigitChar]
          <> (pure <$> ['!', '#', '$', '%', '&', '\'', '(', ')'
                       , '*', '+', '-', '.', '/', ':', '<', '='
                       , '>', '?', '@', '[', ']', '^', '_', '`'
-                      , '{', '|', '}', '~']))
+                      , '{', '|', '}', '~'])))
 
 main :: Effect Unit
 main = runTest do
@@ -51,7 +52,7 @@ main = runTest do
     DataSpec.encodingTests
   test "bakeCookies" do
     quickCheck prop_bakeCookies
-  
+
 prop_bakeCookies :: Array CookieSample -> Result
 prop_bakeCookies cs =
   let cs' = String.joinWith ";" $ map combine cs
